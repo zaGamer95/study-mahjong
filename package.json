@@ -1,0 +1,11 @@
+{
+  "name": "study-mahjong",
+  "version": "1.0.0",
+  "description": "일본 리치 마작 전략 가이드와 버림패 추천기",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "python3 -m http.server 8000"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>전략 가이드 · 리치 마작 공부</title>
+  <meta name="description" content="일본 리치 마작 기초·초급·중급·고급 전략과 족보 정리" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">리치 마작 <span>공부</span></a>
+    <nav class="nav">
+      <a href="index.html">버림패 추천기</a>
+      <a href="guide.html" data-nav="guide">전략 가이드</a>
+      <a href="guide.html?doc=05-yaku" data-nav="yaku">족보</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="guide-layout">
+      <nav class="toc" id="toc"></nav>
+      <article class="doc" id="doc">불러오는 중…</article>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/tiles-ui.js"></script>
+  <script>
+    (function () {
+      const DOCS = [
+        { id: '01-basics', title: '1. 기초', sub: '규칙 · 화료형 · 용어' },
+        { id: '02-beginner', title: '2. 초급', sub: '패효율 · 리치 · 현물' },
+        { id: '03-intermediate', title: '3. 중급', sub: '형태 · 스지 · 벽 · 점수' },
+        { id: '04-advanced', title: '4. 고급', sub: '기대값 · 밀기/접기 · 순위' },
+        { id: '05-yaku', title: '5. 족보', sub: '역 일람 · 판수' },
+      ];
+      const params = new URLSearchParams(location.search);
+      const current = DOCS.find((d) => d.id === params.get('doc')) || DOCS[0];
+      document.title = `${current.title} · 리치 마작 공부`;
+      document.querySelector(`[data-nav="${current.id === '05-yaku' ? 'yaku' : 'guide'}"]`).classList.add('active');
+
+      const toc = document.getElementById('toc');
+      for (const d of DOCS) {
+        const a = document.createElement('a');
+        a.href = `guide.html?doc=${d.id}`;
+        a.innerHTML = `${d.title}<small>${d.sub}</small>`;
+        if (d === current) a.classList.add('active');
+        toc.appendChild(a);
+      }
+
+      const doc = document.getElementById('doc');
+      fetch(`docs/${current.id}.md`)
+        .then((r) => {
+          if (!r.ok) throw new Error(r.status);
+          return r.text();
+        })
+        .then((md) => {
+          doc.innerHTML = window.marked.parse(md);
+          window.TileUI.upgradeInlineTiles(doc);
+          doc.querySelectorAll('a[href^="http"]').forEach((a) => (a.target = '_blank'));
+        })
+        .catch(() => {
+          doc.innerHTML =
+            '<h1>문서를 불러오지 못했습니다</h1><p>파일을 직접 열었다면(file://) 브라우저 보안 때문에 문서를 읽을 수 없습니다. ' +
+            '저장소 폴더에서 <code>python3 -m http.server</code> 를 실행한 뒤 <code>http://localhost:8000/guide.html</code> 로 열거나, ' +
+            'GitHub 에서 <code>docs/</code> 폴더의 마크다운을 직접 읽어주세요.</p>';
+        });
+    })();
+  </script>
+</body>
+</html>

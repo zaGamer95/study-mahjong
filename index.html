@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>버림패 추천기 · 리치 마작 공부</title>
+  <meta name="description" content="내 손패와 버림패를 입력하면 각 패를 버렸을 때의 샨텐·유효패·위험도를 계산해 최선의 타패를 이유와 함께 추천합니다." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">리치 마작 <span>공부</span></a>
+    <nav class="nav">
+      <a href="index.html" class="active">버림패 추천기</a>
+      <a href="guide.html">전략 가이드</a>
+      <a href="guide.html?doc=05-yaku">족보</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>버림패 추천기</h1>
+    <p class="lead">손패 14장(쯔모 후)과 버림패를 입력하면, 손패의 <b>각 패를 버렸을 때</b> 샨텐 수·유효패·다음 단계 형태·타점·방총 위험도를 계산해 순위와 이유를 알려줍니다. <a class="mobile-only" href="#results">↓ 분석 결과 보기</a></p>
+
+    <div class="layout">
+      <!-- ── 입력 ── -->
+      <section>
+        <div class="panel">
+          <h2>예제 불러오기</h2>
+          <div class="examples" id="examples"></div>
+        </div>
+
+        <div class="panel">
+          <h2>패 선택 <small>— 아래에서 입력할 칸을 고른 뒤 패를 클릭</small></h2>
+          <div class="palette" id="palette"></div>
+          <p class="help">텍스트로도 입력할 수 있어요: <code>123m456p789s11z</code> · 적5는 <code>0m/0p/0s</code> · 자패 <code>1z~7z</code> = 동남서북백발중. 입력된 패를 클릭하면 삭제됩니다.</p>
+        </div>
+
+        <div class="panel">
+          <h2>내 패</h2>
+          <div class="targets">
+            <div class="zone" data-target="hand">
+              <div class="zone-head">
+                <strong>손패</strong><span class="count" data-count="hand"></span><span class="spacer"></span>
+                <button type="button" data-sort>정렬</button>
+                <button type="button" data-clear="hand">비우기</button>
+              </div>
+              <div class="tiles" data-tiles="hand" data-empty="패를 클릭해서 14장 입력 (마지막 패 = 쯔모패)"></div>
+              <input type="text" data-text="hand" placeholder="예) 2346m0578p34678s1z" spellcheck="false" />
+              <div class="err" data-err="hand"></div>
+            </div>
+            <div class="zone" data-target="melds">
+              <div class="zone-head"><strong>후로(울기)</strong><span class="count">면자마다 띄어쓰기 · 예) <code>555z 123m</code></span></div>
+              <input type="text" data-text="melds" placeholder="없으면 비워두세요" spellcheck="false" />
+              <div class="err" data-err="melds"></div>
+            </div>
+            <div class="zone" data-target="self">
+              <div class="zone-head"><strong>내 버림패</strong><span class="count" data-count="self"></span><span class="spacer"></span><button type="button" data-clear="self">비우기</button></div>
+              <div class="tiles sm" data-tiles="self" data-empty="후리텐 판정에 사용"></div>
+              <input type="text" data-text="self" spellcheck="false" />
+              <div class="err" data-err="self"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>상대 버림패 <small>— 리치 여부를 설정하면 수비까지 계산</small></h2>
+          <div class="opp-grid">
+            <div class="zone" data-target="shimocha">
+              <div class="zone-head"><strong>하가</strong><span class="count">(오른쪽)</span><span class="spacer"></span>
+                <select class="threat-select" data-threat="shimocha"><option value="none">보통</option><option value="riichi">리치</option><option value="caution">경계(후로·다마)</option></select>
+              </div>
+              <div class="tiles sm" data-tiles="shimocha" data-empty="버림패"></div>
+              <input type="text" data-text="shimocha" spellcheck="false" />
+              <div class="err" data-err="shimocha"></div>
+            </div>
+            <div class="zone" data-target="toimen">
+              <div class="zone-head"><strong>대가</strong><span class="count">(맞은편)</span><span class="spacer"></span>
+                <select class="threat-select" data-threat="toimen"><option value="none">보통</option><option value="riichi">리치</option><option value="caution">경계(후로·다마)</option></select>
+              </div>
+              <div class="tiles sm" data-tiles="toimen" data-empty="버림패"></div>
+              <input type="text" data-text="toimen" spellcheck="false" />
+              <div class="err" data-err="toimen"></div>
+            </div>
+            <div class="zone" data-target="kamicha">
+              <div class="zone-head"><strong>상가</strong><span class="count">(왼쪽)</span><span class="spacer"></span>
+                <select class="threat-select" data-threat="kamicha"><option value="none">보통</option><option value="riichi">리치</option><option value="caution">경계(후로·다마)</option></select>
+              </div>
+              <div class="tiles sm" data-tiles="kamicha" data-empty="버림패"></div>
+              <input type="text" data-text="kamicha" spellcheck="false" />
+              <div class="err" data-err="kamicha"></div>
+            </div>
+          </div>
+          <p class="help">리치 후 다른 사람이 버려서 통과된 패도 그 리치자에게는 현물입니다. 해당 리치자의 칸에 함께 넣어두면 현물로 계산됩니다.</p>
+        </div>
+
+        <div class="panel">
+          <h2>장 정보</h2>
+          <div class="row" style="margin-bottom:10px">
+            <label>장풍 <select id="roundWind"><option value="0">동장</option><option value="1">남장</option></select></label>
+            <label>자풍 <select id="seatWind"><option value="0">동(친)</option><option value="1">남</option><option value="2">서</option><option value="3">북</option></select></label>
+          </div>
+          <div class="targets">
+            <div class="zone" data-target="dora">
+              <div class="zone-head"><strong>도라 표시패</strong><span class="count" data-dora-list></span><span class="spacer"></span><button type="button" data-clear="dora">비우기</button></div>
+              <div class="tiles sm" data-tiles="dora" data-empty="표시패 (도라는 그 다음 패)"></div>
+              <input type="text" data-text="dora" spellcheck="false" />
+              <div class="err" data-err="dora"></div>
+            </div>
+            <div class="zone" data-target="other">
+              <div class="zone-head"><strong>기타 공개패</strong><span class="count">상대 후로 등 (유효패 잔여 계산용)</span><span class="spacer"></span><button type="button" data-clear="other">비우기</button></div>
+              <div class="tiles sm" data-tiles="other" data-empty="상대가 운 패 등"></div>
+              <input type="text" data-text="other" spellcheck="false" />
+              <div class="err" data-err="other"></div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <button type="button" id="resetAll">전체 초기화</button>
+            <button type="button" id="copyLink">현재 상황 링크 복사</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 결과 ── -->
+      <section id="results" aria-live="polite"></section>
+    </div>
+  </main>
+
+  <script src="js/engine.js"></script>
+  <script src="js/tiles-ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
